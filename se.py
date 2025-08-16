@@ -49,7 +49,7 @@ def get_predefined_response(prompt: str, predefined: dict) -> str | None:
 
 # --- Predefined Responses (add your 100+ entries here) ---
 predefined_info = {
-    "who are you":"I am Max your Intelligent Assistant"
+    "who are you":"I am Max your Intelligent Assistant",
     "what is your name": "I am Max, an AI built by Debayan Das.",
     "who made you": "I was created by Debayan Das.",
     "what can you do": "I can search the web, answer with Gemini, and chat with you.",
@@ -114,3 +114,4 @@ if prompt := st.chat_input("Type your question..."):
         st.session_state.messages.append({"role": "links", "content": links})
     
     st.rerun()
+
