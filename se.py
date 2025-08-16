@@ -3,10 +3,12 @@ import requests
 import google.generativeai as genai
 import re, difflib
 
+# --- Configure Gemini ---
 API_KEY = "AIzaSyDDwpm0Qt8-L424wY1oXcJThjZwFDeiUNI"
 genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel("gemini-2.0-flash")
 
+# --- Gemini Response ---
 def get_gemini_response(query: str) -> str:
     try:
         resp = model.generate_content(query)
@@ -14,6 +16,7 @@ def get_gemini_response(query: str) -> str:
     except Exception as e:
         return f"Error from Gemini: {e}"
 
+# --- DuckDuckGo Search ---
 def get_duckduckgo_links(query: str, max_results: int = 10):
     url = "https://api.duckduckgo.com/"
     params = {"q": query, "format": "json", "no_redirect": 1}
@@ -44,8 +47,9 @@ def get_predefined_response(prompt: str, predefined: dict) -> str | None:
         return predefined[match[0]]
     return None
 
-# --- Predefined Answers (your full 100+ list) ---
+# --- Predefined Responses (add your 100+ entries here) ---
 predefined_info = {
+    "who are you":"I am Max your Intelligent Assistant"
     "what is your name": "I am Max, an AI built by Debayan Das.",
     "who made you": "I was created by Debayan Das.",
     "what can you do": "I can search the web, answer with Gemini, and chat with you.",
@@ -64,19 +68,17 @@ predefined_info = {
     "where do you live": "I live in the cloud, inside this app.",
     "what is your purpose": "My purpose is to assist, search, and answer questions interactively.",
     "are you maxai": "Yes, my name is Max, also called MaxAI sometimes.",
-    # ... keep all your 100+ entries here ...
+
 }
 
-# --- UI ---
+# --- Streamlit Page ---
 st.set_page_config(page_title="Max", page_icon="🔍")
 st.title("🎓 Max")
 
-st.chat_message("assistant", avatar="https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg").write(
-    "Hello! I'm Max, your AI assistant. Ask me anything."
-)
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
+
 
 for msg in st.session_state.messages:
     if msg["role"] == "user":
@@ -90,17 +92,25 @@ for msg in st.session_state.messages:
             for link in msg["content"]:
                 st.markdown(f"- [{link}]({link})")
 
+
 if prompt := st.chat_input("Type your question..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
+    
+
     response = get_predefined_response(prompt, predefined_info)
     if response:
         ai_text = response
     else:
+        # Gemini AI response
         with st.spinner("Gemini is thinking..."):
             ai_text = get_gemini_response(prompt)
+    
     st.session_state.messages.append({"role": "ai", "content": ai_text})
+    
+
     if not response:
         with st.spinner("Searching..."):
             links = get_duckduckgo_links(prompt, max_results=15)
         st.session_state.messages.append({"role": "links", "content": links})
+    
     st.rerun()
